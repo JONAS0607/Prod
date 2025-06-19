@@ -11,18 +11,18 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         html, body {
-            height: 100%; /* Garante que html e body ocupem a altura total do viewport */
-            margin: 0;   /* Remove margens padrão do body */
-            padding: 0;  /* Remove preenchimento padrão do body */
-            overflow: hidden; /* Impede a rolagem do html/body, a rolagem será gerenciada por contêineres internos */
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            /* overflow: hidden; Removido para permitir rolagem natural */
         }
 
         body {
             font-family: 'Inter', sans-serif;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
-            display: flex; /* Define o body como um contêiner flex para empilhar os elementos */
-            flex-direction: column; /* Empilha os filhos verticalmente */
+            display: flex;
+            flex-direction: column;
         }
         /* Existing productivity colors for text/backgrounds */
         .productivity-green { background-color: #d1fae5; color: #065f46; }
@@ -121,29 +121,29 @@
         
         /* Fixed action bar */
         .fixed-action-bar {
-            position: fixed;
+            position: sticky; /* Alterado para sticky */
             bottom: 1rem; /* Ajustado para ficar um pouco mais perto da base */
-            left: 0; /* Alinha à borda esquerda */
-            right: 0; /* Alinha à borda direita */
-            transform: none; /* Remove transform para alinhamento móvel mais simples */
-            justify-content: center; /* Centraliza os botões dentro da barra */
-            width: 100%; /* Garante que ocupe a largura total */
-            max-width: none; /* Sobrescreve qualquer max-width */
-            padding: 0.75rem 1rem; /* Ajusta o preenchimento para celular */
-            box-sizing: border-box; /* Inclui preenchimento e borda na largura total do elemento */
-            border-radius: 9999px; /* Mantém o formato de pílula por padrão */
+            left: 0;
+            right: 0;
+            width: 100%;
+            transform: none;
+            justify-content: center;
+            max-width: none;
+            padding: 0.75rem 1rem;
+            box-sizing: border-box;
+            border-radius: 9999px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             backdrop-filter: blur(5px);
             -webkit-backdrop-filter: blur(5px);
             display: flex;
             gap: 1rem;
-            z-index: 40; /* Abaixo dos modais, acima do conteúdo principal */
+            z-index: 40;
             background-color: rgba(255, 255, 255, 0.9);
         }
 
         /* Current time display */
         .current-time-display {
-            position: fixed;
+            position: sticky; /* Alterado para sticky */
             bottom: 1rem; /* Alinha com a barra de ação */
             left: 1.5rem;
             background-color: rgba(0, 0, 0, 0.7);
@@ -152,39 +152,40 @@
             border-radius: 0.5rem;
             font-family: monospace;
             z-index: 40;
+            margin-top: auto; /* Empurra para o fundo do flex container */
         }
 
         /* General message box */
         #message-box {
-            position: fixed; /* Changed to fixed */
-            top: 1rem; /* Position at top */
-            left: 50%; /* Center horizontally */
-            transform: translateX(-50%); /* Adjust for centering */
-            width: fit-content; /* Adjust width to content */
-            max-width: 90%; /* Ensure it doesn't overflow on small screens */
-            background-color: #e2e8f0; /* bg-blue-100 */
-            border: 1px solid #90cdf4; /* border-blue-400 */
-            color: #2b6cb0; /* text-blue-700 */
+            position: fixed;
+            top: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: fit-content;
+            max-width: 90%;
+            background-color: #e2e8f0;
+            border: 1px solid #90cdf4;
+            color: #2b6cb0;
             padding: 0.75rem 1rem;
-            padding-right: 2.5rem; /* Added padding-right to make space for the close button */
+            padding-right: 2.5rem;
             border-radius: 0.5rem;
-            z-index: 1000; /* Higher z-index to appear over everything */
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
         #message-box.success {
-            background-color: #d1fae5; /* green-100 */
-            border-color: #38a169; /* green-600 */
-            color: #2f855a; /* green-800 */
+            background-color: #d1fae5;
+            border-color: #38a169;
+            color: #2f855a;
         }
         #message-box.warning {
-            background-color: #fefcbf; /* yellow-100 */
-            border-color: #d69e2e; /* yellow-600 */
-            color: #b7791f; /* yellow-800 */
+            background-color: #fefcbf;
+            border-color: #d69e2e;
+            color: #b7791f;
         }
         #message-box.error {
-            background-color: #fee2e2; /* red-100 */
-            border-color: #e53e3e; /* red-600 */
-            color: #c53030; /* red-800 */
+            background-color: #fee2e2;
+            border-color: #e53e3e;
+            color: #c53030;
         }
         #message-box .close-btn {
             position: absolute;
@@ -200,82 +201,110 @@
         /* Drag and Drop styles */
         .dragging {
             opacity: 0.5;
-            background-color: #f0f4f8; /* Light gray to indicate dragging */
+            background-color: #f0f4f8;
         }
         .drag-over {
-            border-top: 2px solid #3b82f6; /* Blue border to indicate drop target */
+            border-top: 2px solid #3b82f6;
         }
 
         /* Highlight for overdue/pending activities */
         .activity-pending {
-            background-color: #fbd38d !important; /* orange-300 */
+            background-color: #fbd38d !important;
             opacity: 0.8;
         }
         
         /* Highlight for active activity */
         .activity-active-row {
-            outline: 2px solid #3b82f6; /* Blue outline */
-            outline-offset: -2px; /* Pull outline inside border */
-            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5); /* Blue glow */
+            outline: 2px solid #3b82f6;
+            outline-offset: -2px;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
         }
 
         /* Highlight for recorded time exceeding planned time */
         .time-exceeded {
-            color: #ef4444; /* red-500 */
+            color: #ef4444;
             font-weight: bold;
         }
 
         /* Smart Summary Modal Content Styling */
         #smart-summary-content {
-            max-height: 70vh; /* Set a max height for scrolling */
-            overflow-y: auto; /* Enable vertical scrolling */
-            padding: 1rem; /* Add some padding around the content */
+            max-height: 70vh;
+            overflow-y: auto;
+            padding: 1rem;
         }
 
         /* For the modal description to prevent overflow */
         #modal-activity-description {
             word-break: break-word;
-            white-space: normal; /* Ensure normal wrapping for long text */
+            white-space: normal;
         }
 
         /* Responsive adjustments for smaller screens */
         #app {
-            flex-grow: 1; /* Permite que a área de conteúdo principal ocupe o espaço disponível */
+            flex-grow: 1;
             overflow-y: auto; /* Permite a rolagem dentro da área de conteúdo principal */
-            -webkit-overflow-scrolling: touch; /* Rolagem suave em iOS */
-            /* As classes Tailwind max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 já estão no elemento e são responsivas. */
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 5rem; /* Adiciona espaço no final para não esconder o conteúdo com a barra fixa */
         }
 
         @media (max-width: 640px) { /* Para telas menores ou iguais ao breakpoint 'sm' do Tailwind */
             #app {
-                padding: 0.5rem; /* Menor preenchimento em telas muito pequenas */
+                padding: 0.5rem;
             }
             .fixed-action-bar {
-                padding: 0.5rem; /* Menor preenchimento para a barra de ação */
-                bottom: 0; /* Fixa na base absoluta em telas muito pequenas */
-                border-radius: 0; /* Torna-o uma barra de largura total em dispositivos móveis */
+                padding: 0.5rem;
+                bottom: 0;
+                border-radius: 0;
             }
             .current-time-display {
-                bottom: 0.5rem; /* Ajusta se a barra de ação for para bottom:0 */
+                bottom: 0.5rem;
                 left: 0.5rem;
             }
-            /* Ajusta inputs e selects dentro da tabela para serem mais flexíveis */
-            #productivity-table input,
-            #productivity-table select {
-                min-width: 4rem; /* Garante uma largura mínima, mas permite encolhimento */
-                max-width: 100%; /* Garante que não transbordem suas células */
-                box-sizing: border-box; /* Inclui padding/border no cálculo da largura */
+
+            /* Esconde a tabela e mostra os cards em mobile */
+            #productivity-table {
+                display: none;
             }
-            /* Ajuste específico para a célula de duração para manter tudo na mesma linha */
-            #productivity-table td:nth-child(5) { /* Seleciona a 5ª coluna (Duração) */
-                white-space: nowrap; /* Impede a quebra de linha */
-                display: flex; /* Permite alinhamento flexível dos itens internos */
-                align-items: center; /* Alinha verticalmente */
-                gap: 0.25rem; /* Espaçamento pequeno entre os elementos */
+            #activity-cards-container {
+                display: flex; /* Habilita flexbox para os cards */
+                overflow-x: auto; /* Permite rolagem horizontal */
+                white-space: nowrap; /* Impede que os cards quebrem linha */
+                scroll-snap-type: x mandatory; /* Habilita o scroll-snap para carrossel */
+                -webkit-overflow-scrolling: touch; /* Rolagem suave em iOS */
+                padding-bottom: 1rem; /* Espaço para a sombra/rolagem */
             }
-            #productivity-table td:nth-child(5) input {
-                flex-shrink: 1; /* Permite que o input encolha se necessário */
-                width: auto; /* Deixa a largura ser ajustada pelo conteúdo e flexbox */
+            .activity-card {
+                flex: 0 0 auto; /* Não cresce, não encolhe, largura automática */
+                width: 90%; /* Largura do card em mobile */
+                margin-right: 1rem; /* Espaçamento entre os cards */
+                scroll-snap-align: start; /* Alinha o início do card ao snap point */
+                display: flex;
+                flex-direction: column;
+                padding: 1rem;
+                border-radius: 0.5rem;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+                background-color: white;
+            }
+            .activity-card:last-child {
+                margin-right: 0;
+            }
+
+            .activity-card input,
+            .activity-card select,
+            .activity-card textarea {
+                width: 100%; /* Inputs e selects preenchem o card */
+                box-sizing: border-box; /* Inclui padding e border na largura */
+                padding: 0.5rem;
+                margin-bottom: 0.5rem;
+            }
+        }
+        /* Desktop styles (show table, hide cards) */
+        @media (min-width: 641px) {
+            #productivity-table {
+                display: table; /* Mostra a tabela em desktop */
+            }
+            #activity-cards-container {
+                display: none; /* Esconde os cards em desktop */
             }
         }
     </style>
@@ -364,6 +393,7 @@
             
             <div class="bg-white rounded-lg shadow-md">
                 <div class="overflow-x-auto">
+                    <!-- Tabela para Desktop -->
                     <table id="productivity-table" class="w-full text-sm text-left text-gray-500">
                         <thead class="text-xs text-gray-700 uppercase bg-gray-100">
                             <tr>
@@ -376,7 +406,6 @@
                                 <th scope="col" class="px-4 py-3">Produtividade</th>
                                 <th scope="col" class="px-4 py-3">Alavancador</th>
                                 <th scope="col" class="px-4 py-3 text-center">
-                                    <!-- Botão "Adicionar Atividade" movido para o cabeçalho da tabela -->
                                     <button id="add-activity-column-btn" class="p-1 bg-blue-600 text-white rounded-full shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
                                         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
@@ -389,6 +418,11 @@
                             <!-- Linhas de atividade serão inseridas aqui via JS -->
                         </tbody>
                     </table>
+
+                    <!-- Carrossel de Cards para Mobile -->
+                    <div id="activity-cards-container" class="hidden">
+                        <!-- Cards de atividade serão inseridos aqui via JS -->
+                    </div>
                 </div>
             </div>
 
@@ -719,6 +753,9 @@ Almoço,60,Amarelo,Saúde e Bem-Estar</pre>
             const smartSummaryLoading = document.getElementById('smart-summary-loading');
             const copySummaryBtn = document.getElementById('copy-summary-btn');
 
+            // New: Activity Cards Container
+            const activityCardsContainer = document.getElementById('activity-cards-container');
+
 
             // Estado da Aplicação
             let activities = [];
@@ -820,11 +857,89 @@ Almoço,60,Amarelo,Saúde e Bem-Estar</pre>
             };
 
             const render = () => {
-                renderTable();
+                // Check screen width to determine which view to render
+                if (window.innerWidth <= 640) { // Equivalent to Tailwind's 'sm' breakpoint
+                    renderActivityCards();
+                    document.getElementById('productivity-table').style.display = 'none';
+                    activityCardsContainer.style.display = 'flex';
+                } else {
+                    renderTable();
+                    document.getElementById('productivity-table').style.display = 'table';
+                    activityCardsContainer.style.display = 'none';
+                }
                 updateSummaries();
                 renderTips();
                 updateFixedActionBarVisibility();
             };
+
+            // New: Render activities as cards for mobile
+            const renderActivityCards = () => {
+                activityCardsContainer.innerHTML = '';
+                activities.forEach((activity, index) => {
+                    const card = document.createElement('div');
+                    let cardClasses = ['activity-card'];
+                    
+                    // Add productivity-based card color class
+                    if (activity.productivity === 'green') {
+                        cardClasses.push('productivity-green-row');
+                    } else if (activity.productivity === 'yellow') {
+                        cardClasses.push('productivity-yellow-row');
+                    } else if (activity.productivity === 'red') {
+                        cardClasses.push('productivity-red-row');
+                    }
+
+                    if (activeTimerId === activity.id) {
+                        cardClasses.push('activity-active-row');
+                    }
+
+                    card.className = cardClasses.join(' ');
+                    card.dataset.id = activity.id;
+                    card.draggable = true; // Still allow drag for reordering within the carousel if implemented
+
+                    const startTimeForRender = index === 0 ? activity.startTime : calculateEndTime(activities[index-1].startTime, activities[index-1].duration);
+                    activity.startTime = startTimeForRender;
+                    const endTime = calculateEndTime(startTimeForRender, activity.duration);
+
+                    const timeExceededClass = activity.recordedTime > (activity.duration * 60) ? 'time-exceeded' : '';
+                    const alarmClass = activity.alarmTriggered ? 'alarm-visual' : '';
+
+                    card.innerHTML = `
+                        <div class="flex items-center justify-between mb-2">
+                            <input type="checkbox" class="activity-checkbox rounded text-blue-600 focus:ring-blue-500" ${activity.selected ? 'checked' : ''}>
+                            <span class="text-xs text-gray-500">${startTimeForRender} - ${endTime}</span>
+                        </div>
+                        <input type="text" value="${activity.description}" class="text-lg font-semibold bg-transparent border-b focus:border-blue-500 pb-1" data-field="description">
+                        <div class="flex items-center justify-between mt-2 text-sm">
+                            <label class="block text-gray-700">Duração:</label>
+                            <input type="text" value="${minutesToHHMM(activity.duration)}" placeholder="HH:MM ou minutos" class="flex-grow ml-2 bg-transparent border-b focus:border-blue-500 text-right" data-field="duration-flexible">
+                            <span class="ml-1 text-gray-600">(${activity.duration} min)</span>
+                        </div>
+                        <div class="flex items-center justify-between mt-2 text-sm">
+                            <label class="block text-gray-700">Registrado:</label>
+                            <span class="font-mono ${alarmClass} ${timeExceededClass} ml-2">${formatTime(activity.recordedTime)}</span>
+                        </div>
+                        <div class="flex items-center justify-between mt-2 text-sm">
+                            <label class="block text-gray-700">Produtividade:</label>
+                            <select class="ml-2 bg-transparent border-b focus:border-blue-500 flex-grow text-right" data-field="productivity">
+                                ${Object.entries(productivityLevels).map(([key, value]) => `<option value="${key}" ${activity.productivity === key ? 'selected' : ''}>${value}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div class="flex items-center justify-between mt-2 text-sm">
+                            <label class="block text-gray-700">Alavancador:</label>
+                            <select class="ml-2 bg-transparent border-b focus:border-blue-500 flex-grow text-right" data-field="lever">
+                                ${Object.entries(levers).map(([key, value]) => `<option value="${key}" ${activity.lever === key ? 'selected' : ''}>${value}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div class="flex justify-center mt-4">
+                            <!-- Drag handle for mobile cards -->
+                            <span class="text-gray-400 cursor-grab drag-handle">⋮</span>
+                        </div>
+                    `;
+                    activityCardsContainer.appendChild(card);
+                });
+                updateSelectAllCheckbox();
+            };
+
 
             const renderTable = () => {
                 tableBody.innerHTML = '';
@@ -879,7 +994,7 @@ Almoço,60,Amarelo,Saúde e Bem-Estar</pre>
                             - ${endTime}
                         </td>
                         <td class="px-6 py-2"><input type="text" value="${activity.description}" class="w-full bg-transparent focus:bg-white p-1 rounded border-transparent focus:border-gray-300" data-field="description"></td>
-                        <td class="px-4 py-2 flex items-center gap-1"> <!-- Added flex and items-center for inline display -->
+                        <td class="px-4 py-2 flex items-center gap-1">
                             <input type="text" value="${minutesToHHMM(activity.duration)}" placeholder="HH:MM ou minutos" class="w-28 bg-transparent focus:bg-white p-1 rounded border-transparent focus:border-gray-300" data-field="duration-flexible">
                             <span>(${activity.duration} min)</span>
                         </td>
@@ -986,7 +1101,7 @@ Almoço,60,Amarelo,Saúde e Bem-Estar</pre>
             };
 
             const handleTableClick = (e) => {
-                const row = e.target.closest('tr');
+                const row = e.target.closest('tr') || e.target.closest('.activity-card');
                 if (!row) return;
                 const id = Number(row.dataset.id);
                 const activityIndex = activities.findIndex(act => act.id === id);
@@ -1001,7 +1116,7 @@ Almoço,60,Amarelo,Saúde e Bem-Estar</pre>
             };
             
             const handleTableChange = (e) => {
-                const row = e.target.closest('tr');
+                const row = e.target.closest('tr') || e.target.closest('.activity-card');
                 if (!row) return;
                 const id = Number(row.dataset.id);
                 const activityIndex = activities.findIndex(act => act.id === id);
@@ -1571,53 +1686,51 @@ Almoço,60,Amarelo,Saúde e Bem-Estar</pre>
             // --- Drag and Drop ---
             let draggedItem = null;
 
-            tableBody.addEventListener('dragstart', (e) => {
-                // Ensure drag is only for the TR and not its children like inputs/buttons
-                if (e.target.tagName === 'TR' || e.target.closest('tr')) {
-                     const targetRow = e.target.closest('tr');
-                     if (targetRow && e.target.tagName !== 'INPUT' && e.target.tagName !== 'SELECT' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'TEXTAREA') {
-                        draggedItem = targetRow;
-                        e.dataTransfer.effectAllowed = 'move';
-                        e.target.classList.add('dragging');
-                     } else {
-                        e.preventDefault(); // Prevent dragging for interactive elements
-                     }
+            // Common event listener for both table rows and cards
+            const handleDragStart = (e) => {
+                const targetElement = e.target.closest('tr') || e.target.closest('.activity-card');
+                if (targetElement && e.target.tagName !== 'INPUT' && e.target.tagName !== 'SELECT' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'TEXTAREA') {
+                    draggedItem = targetElement;
+                    e.dataTransfer.effectAllowed = 'move';
+                    e.target.classList.add('dragging');
+                } else {
+                    e.preventDefault();
                 }
-            });
+            };
 
-            tableBody.addEventListener('dragover', (e) => {
-                e.preventDefault(); // Necessary to allow drop
-                const targetRow = e.target.closest('tr');
-                if (targetRow && draggedItem !== targetRow) {
-                    const bounding = targetRow.getBoundingClientRect();
+            const handleDragOver = (e) => {
+                e.preventDefault();
+                const targetElement = e.target.closest('tr') || e.target.closest('.activity-card');
+                if (targetElement && draggedItem !== targetElement) {
+                    const bounding = targetElement.getBoundingClientRect();
                     const offset = bounding.y + (bounding.height / 2);
-                    // Clear previous borders
-                    Array.from(tableBody.children).forEach(row => {
-                        row.style.borderTop = '';
-                        row.style.borderBottom = '';
-                    });
+                    
+                    // Clear previous borders for both table rows and cards
+                    Array.from(tableBody.children).forEach(row => { row.style.borderTop = ''; row.style.borderBottom = ''; });
+                    Array.from(activityCardsContainer.children).forEach(card => { card.style.borderTop = ''; card.style.borderBottom = ''; });
+
                     if (e.clientY - offset > 0) {
-                        targetRow.style.borderBottom = '2px solid #3b82f6';
+                        targetElement.style.borderBottom = '2px solid #3b82f6';
                     } else {
-                        targetRow.style.borderTop = '2px solid #3b82f6';
+                        targetElement.style.borderTop = '2px solid #3b82f6';
                     }
                 }
-            });
+            };
 
-            tableBody.addEventListener('dragleave', (e) => {
-                const targetRow = e.target.closest('tr');
-                if (targetRow) {
-                    targetRow.style.borderTop = '';
-                    targetRow.style.borderBottom = '';
+            const handleDragLeave = (e) => {
+                const targetElement = e.target.closest('tr') || e.target.closest('.activity-card');
+                if (targetElement) {
+                    targetElement.style.borderTop = '';
+                    targetElement.style.borderBottom = '';
                 }
-            });
+            };
 
-            tableBody.addEventListener('drop', (e) => {
+            const handleDrop = (e) => {
                 e.preventDefault();
-                const targetRow = e.target.closest('tr');
-                if (targetRow && draggedItem && draggedItem !== targetRow) {
+                const targetElement = e.target.closest('tr') || e.target.closest('.activity-card');
+                if (targetElement && draggedItem && draggedItem !== targetElement) {
                     const draggedId = Number(draggedItem.dataset.id);
-                    const targetId = Number(targetRow.dataset.id);
+                    const targetId = Number(targetElement.dataset.id);
 
                     const draggedIndex = activities.findIndex(act => act.id === draggedId);
                     const targetIndex = activities.findIndex(act => act.id === targetId);
@@ -1625,39 +1738,31 @@ Almoço,60,Amarelo,Saúde e Bem-Estar</pre>
                     if (draggedIndex === -1 || targetIndex === -1) return;
 
                     const [removed] = activities.splice(draggedIndex, 1);
-                    const insertBefore = e.clientY < targetRow.getBoundingClientRect().top + (targetRow.offsetHeight / 2);
+                    const insertBefore = e.clientY < targetElement.getBoundingClientRect().top + (targetElement.offsetHeight / 2);
 
                     activities.splice(insertBefore ? targetIndex : targetIndex + (draggedIndex < targetIndex ? 0 : 1), 0, removed);
                     
-                    // Reset start times for consistency after reordering
                     recalculateActivityTimes(0);
                     render();
                     saveData();
                 }
                 if (draggedItem) {
                     draggedItem.classList.remove('dragging');
-                    // Reset any temporary styling from dragover
-                    const allRows = tableBody.querySelectorAll('tr');
-                    allRows.forEach(row => {
-                        row.style.borderTop = '';
-                        row.style.borderBottom = '';
-                    });
+                    Array.from(tableBody.children).forEach(row => { row.style.borderTop = ''; row.style.borderBottom = ''; });
+                    Array.from(activityCardsContainer.children).forEach(card => { card.style.borderTop = ''; card.style.borderBottom = ''; });
                 }
                 draggedItem = null;
-            });
+            };
 
-            tableBody.addEventListener('dragend', (e) => {
+            const handleDragEnd = (e) => {
                 if (draggedItem) {
                     draggedItem.classList.remove('dragging');
-                    // Reset any temporary styling from dragover
-                    const allRows = tableBody.querySelectorAll('tr');
-                    allRows.forEach(row => {
-                        row.style.borderTop = '';
-                        row.style.borderBottom = '';
-                    });
+                    Array.from(tableBody.children).forEach(row => { row.style.borderTop = ''; row.style.borderBottom = ''; });
+                    Array.from(activityCardsContainer.children).forEach(card => { card.style.borderTop = ''; card.style.borderBottom = ''; });
                 }
                 draggedItem = null;
-            });
+            };
+
 
             // --- Gráfico ---
             const renderChart = () => {
@@ -1666,11 +1771,7 @@ Almoço,60,Amarelo,Saúde e Bem-Estar</pre>
                     chartInstance.destroy();
                 }
 
-                // Get all dates in historicalData and sort them
                 const allDates = Object.keys(historicalData).sort();
-                // We want to calculate the AVERAGE time spent on each lever over ALL available historical days.
-                // Or total time? The prompt says "visão global do seu tempo total investido em cada "Alavancador" ao longo de todos os dias". So total.
-
                 const totalLeverTimes = Object.keys(levers).reduce((acc, key) => ({ ...acc, [key]: 0 }), {});
 
                 allDates.forEach(date => {
@@ -1681,18 +1782,18 @@ Almoço,60,Amarelo,Saúde e Bem-Estar</pre>
                     });
                 });
 
-                const labels = Object.values(levers); // Labels for the radar chart axes
+                const labels = Object.values(levers);
                 const dataPoints = labels.map(leverName => {
                     const leverKey = Object.keys(levers).find(key => levers[key] === leverName);
-                    return (totalLeverTimes[leverKey] || 0) / 3600; // Convert seconds to hours
+                    return (totalLeverTimes[leverKey] || 0) / 3600;
                 });
 
                 chartInstance = new Chart(ctx, {
-                    type: 'radar', // Changed to radar chart
+                    type: 'radar',
                     data: { labels: labels, datasets: [{
                         label: 'Horas Totais Gastas',
                         data: dataPoints,
-                        backgroundColor: 'rgba(96, 165, 250, 0.4)', // Blue with transparency
+                        backgroundColor: 'rgba(96, 165, 250, 0.4)',
                         borderColor: 'rgba(96, 165, 250, 1)',
                         pointBackgroundColor: 'rgba(96, 165, 250, 1)',
                         pointBorderColor: '#fff',
@@ -1701,7 +1802,7 @@ Almoço,60,Amarelo,Saúde e Bem-Estar</pre>
                     }] },
                     options: {
                         responsive: true,
-                        maintainAspectRatio: false, // Important for full responsiveness within parent container
+                        maintainAspectRatio: false,
                         elements: {
                             line: {
                                 borderWidth: 3
@@ -1712,7 +1813,7 @@ Almoço,60,Amarelo,Saúde e Bem-Estar</pre>
                                 angleLines: {
                                     display: false
                                 },
-                                suggestedMin: 0, // Start from 0 hours
+                                suggestedMin: 0,
                                 ticks: {
                                     beginAtZero: true,
                                     font: {
@@ -1723,7 +1824,7 @@ Almoço,60,Amarelo,Saúde e Bem-Estar</pre>
                         },
                         plugins: {
                             legend: {
-                                display: true // Keep legend to show 'Horas Totais Gastas'
+                                display: true
                             },
                             tooltip: {
                                 callbacks: {
@@ -1732,7 +1833,7 @@ Almoço,60,Amarelo,Saúde e Bem-Estar</pre>
                                         if (label) {
                                             label += ': ';
                                         }
-                                        label += context.parsed.r.toFixed(2) + ' horas'; // Display hours
+                                        label += context.parsed.r.toFixed(2) + ' horas';
                                         return label;
                                     }
                                 }
@@ -1762,7 +1863,7 @@ Almoço,60,Amarelo,Saúde e Bem-Estar</pre>
             const calculateEndTime = (start, dur) => { 
                 const t = timeToMinutes(start) + dur; 
                 const totalMinutesInDay = 24 * 60;
-                const adjustedT = t % totalMinutesInDay; // Handle overflow to next day if duration goes beyond midnight
+                const adjustedT = t % totalMinutesInDay;
                 const hours = Math.floor(adjustedT / 60);
                 const minutes = adjustedT % 60;
                 return `${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}`;
@@ -1791,8 +1892,8 @@ Almoço,60,Amarelo,Saúde e Bem-Estar</pre>
 
                 const head = [['Checkbox', 'Arrastar', 'Horário', 'Atividade', 'Duração (min/HH:MM)', 'Registrado', 'Produtividade', 'Alavancador']];
                 const body = activities.map(act => [
-                    act.selected ? 'X' : '', // Checkbox
-                    '⋮', // Drag handle visual in PDF
+                    act.selected ? 'X' : '',
+                    '⋮',
                     `${act.startTime} - ${calculateEndTime(act.startTime, act.duration)}`,
                     act.description,
                     `${act.duration} min (${minutesToHHMM(act.duration)})`,
@@ -1813,7 +1914,7 @@ Almoço,60,Amarelo,Saúde e Bem-Estar</pre>
                 const seconds = now.getSeconds().toString().padStart(2, '0');
                 currentTimeDisplay.textContent = `${hours}:${minutes}:${seconds}`;
             };
-            setInterval(updateCurrentTimeDisplay, 1000); // Update every second
+            setInterval(updateCurrentTimeDisplay, 1000);
 
             // --- LLM Integration: Generate Smart Summary ---
             const generateSmartSummary = async () => {
@@ -1909,8 +2010,11 @@ Aqui estão as atividades do dia:
             saveTemplateBtn.addEventListener('click', saveTemplate);
             loadTemplateBtn.addEventListener('click', loadTemplate);
 
-            tableBody.addEventListener('click', handleTableClick);
-            tableBody.addEventListener('change', handleTableChange); // For input/select/textarea changes
+            // Event delegation for both table and cards
+            document.querySelector('#productivity-table').addEventListener('click', handleTableClick);
+            document.querySelector('#productivity-table').addEventListener('change', handleTableChange);
+            activityCardsContainer.addEventListener('click', handleTableClick); // Use the same click handler for cards
+            activityCardsContainer.addEventListener('change', handleTableChange); // Use the same change handler for cards
 
             selectAllActivitiesCheckbox.addEventListener('change', (e) => {
                 activities.forEach(activity => activity.selected = e.target.checked);
@@ -1979,6 +2083,22 @@ Aqui estão as atividades do dia:
             generateSummaryBtn.addEventListener('click', generateSmartSummary);
             closeSmartSummaryModalBtn.addEventListener('click', () => smartSummaryModal.classList.add('hidden'));
             copySummaryBtn.addEventListener('click', copySmartSummaryToClipboard);
+
+            // Drag and Drop listeners applied to both tableBody and activityCardsContainer
+            tableBody.addEventListener('dragstart', handleDragStart);
+            tableBody.addEventListener('dragover', handleDragOver);
+            tableBody.addEventListener('dragleave', handleDragLeave);
+            tableBody.addEventListener('drop', handleDrop);
+            tableBody.addEventListener('dragend', handleDragEnd);
+
+            activityCardsContainer.addEventListener('dragstart', handleDragStart);
+            activityCardsContainer.addEventListener('dragover', handleDragOver);
+            activityCardsContainer.addEventListener('dragleave', handleDragLeave);
+            activityCardsContainer.addEventListener('drop', handleDrop);
+            activityCardsContainer.addEventListener('dragend', handleDragEnd);
+
+            // Handle window resize to switch between table and cards
+            window.addEventListener('resize', render);
             
             // --- Inicialização ---
             loadData();
