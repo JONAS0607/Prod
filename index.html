@@ -10,10 +10,19 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        html, body {
+            height: 100%; /* Garante que html e body ocupem a altura total do viewport */
+            margin: 0;   /* Remove margens padrão do body */
+            padding: 0;  /* Remove preenchimento padrão do body */
+            overflow: hidden; /* Impede a rolagem do html/body, a rolagem será gerenciada por contêineres internos */
+        }
+
         body {
             font-family: 'Inter', sans-serif;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
+            display: flex; /* Define o body como um contêiner flex para empilhar os elementos */
+            flex-direction: column; /* Empilha os filhos verticalmente */
         }
         /* Existing productivity colors for text/backgrounds */
         .productivity-green { background-color: #d1fae5; color: #065f46; }
@@ -113,24 +122,29 @@
         /* Fixed action bar */
         .fixed-action-bar {
             position: fixed;
-            bottom: 1.5rem;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 40; /* Below modals, above main content */
-            background-color: rgba(255, 255, 255, 0.9);
-            padding: 0.75rem 1.5rem;
-            border-radius: 9999px; /* pill shape */
+            bottom: 1rem; /* Ajustado para ficar um pouco mais perto da base */
+            left: 0; /* Alinha à borda esquerda */
+            right: 0; /* Alinha à borda direita */
+            transform: none; /* Remove transform para alinhamento móvel mais simples */
+            justify-content: center; /* Centraliza os botões dentro da barra */
+            width: 100%; /* Garante que ocupe a largura total */
+            max-width: none; /* Sobrescreve qualquer max-width */
+            padding: 0.75rem 1rem; /* Ajusta o preenchimento para celular */
+            box-sizing: border-box; /* Inclui preenchimento e borda na largura total do elemento */
+            border-radius: 9999px; /* Mantém o formato de pílula por padrão */
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             backdrop-filter: blur(5px);
             -webkit-backdrop-filter: blur(5px);
             display: flex;
             gap: 1rem;
+            z-index: 40; /* Abaixo dos modais, acima do conteúdo principal */
+            background-color: rgba(255, 255, 255, 0.9);
         }
 
         /* Current time display */
         .current-time-display {
             position: fixed;
-            bottom: 1.5rem;
+            bottom: 1rem; /* Alinha com a barra de ação */
             left: 1.5rem;
             background-color: rgba(0, 0, 0, 0.7);
             color: white;
@@ -222,6 +236,47 @@
         #modal-activity-description {
             word-break: break-word;
             white-space: normal; /* Ensure normal wrapping for long text */
+        }
+
+        /* Responsive adjustments for smaller screens */
+        #app {
+            flex-grow: 1; /* Permite que a área de conteúdo principal ocupe o espaço disponível */
+            overflow-y: auto; /* Permite a rolagem dentro da área de conteúdo principal */
+            -webkit-overflow-scrolling: touch; /* Rolagem suave em iOS */
+            /* As classes Tailwind max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 já estão no elemento e são responsivas. */
+        }
+
+        @media (max-width: 640px) { /* Para telas menores ou iguais ao breakpoint 'sm' do Tailwind */
+            #app {
+                padding: 0.5rem; /* Menor preenchimento em telas muito pequenas */
+            }
+            .fixed-action-bar {
+                padding: 0.5rem; /* Menor preenchimento para a barra de ação */
+                bottom: 0; /* Fixa na base absoluta em telas muito pequenas */
+                border-radius: 0; /* Torna-o uma barra de largura total em dispositivos móveis */
+            }
+            .current-time-display {
+                bottom: 0.5rem; /* Ajusta se a barra de ação for para bottom:0 */
+                left: 0.5rem;
+            }
+            /* Ajusta inputs e selects dentro da tabela para serem mais flexíveis */
+            #productivity-table input,
+            #productivity-table select {
+                min-width: 4rem; /* Garante uma largura mínima, mas permite encolhimento */
+                max-width: 100%; /* Garante que não transbordem suas células */
+                box-sizing: border-box; /* Inclui padding/border no cálculo da largura */
+            }
+            /* Ajuste específico para a célula de duração para manter tudo na mesma linha */
+            #productivity-table td:nth-child(5) { /* Seleciona a 5ª coluna (Duração) */
+                white-space: nowrap; /* Impede a quebra de linha */
+                display: flex; /* Permite alinhamento flexível dos itens internos */
+                align-items: center; /* Alinha verticalmente */
+                gap: 0.25rem; /* Espaçamento pequeno entre os elementos */
+            }
+            #productivity-table td:nth-child(5) input {
+                flex-shrink: 1; /* Permite que o input encolha se necessário */
+                width: auto; /* Deixa a largura ser ajustada pelo conteúdo e flexbox */
+            }
         }
     </style>
 </head>
@@ -452,7 +507,9 @@ Almoço,60,Amarelo,Saúde e Bem-Estar</pre>
         <aside id="stats-section" class="hidden">
             <div class="bg-white rounded-lg shadow-md p-6">
                 <h2 class="text-xl font-bold mb-4">Evolução do Tempo por Alavancador</h2>
-                <canvas id="stats-chart"></canvas>
+                <div class="relative h-80 w-full"> <!-- Contêiner responsivo para o canvas -->
+                    <canvas id="stats-chart"></canvas>
+                </div>
             </div>
         </aside>
 
@@ -495,8 +552,7 @@ Almoço,60,Amarelo,Saúde e Bem-Estar</pre>
                         <button id="modal-reset-btn" class="p-3 bg-red-500 text-white rounded-full shadow-md hover:bg-red-600 focus:outline-none">
                             <!-- Ícone de zerar mais coerente (circular arrow) -->
                             <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 005.707 5.707L4 7.414V4m0 0h5.712m2.41 13.707l-1.414 1.414A8.001 8.001 0 0018.293 4.293M20 20v-5h-.582"></path>
-                            </svg>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 005.707 5.707L4 7.414V4m0 0h5.712m2.41 13.707l-1.414 1.414A8.001 8.001 0 0018.293 4.293M20 20v-5h-.582"></path></svg>
                         </button>
                     </div>
 
@@ -673,6 +729,7 @@ Almoço,60,Amarelo,Saúde e Bem-Estar</pre>
             let allQuickActivities = []; 
             let activeTimerInterval = null;
             let activeTimerId = null;
+            let activeTimerStartTimestamp = null; // New variable to store the timestamp when the timer starts
             let chartInstance = null;
             let pomodoroInterval = null;
             let pomodoroTimeLeft = 25 * 60; // 25 minutes in seconds
@@ -706,6 +763,8 @@ Almoço,60,Amarelo,Saúde e Bem-Estar</pre>
                 const savedHistoricalData = localStorage.getItem('productivityPlanHistory');
                 // Load all quick activities, default to initial predefined if none saved
                 const savedAllQuickActivities = localStorage.getItem('productivityAllQuickActivities');
+                const savedActiveTimerId = localStorage.getItem('activeTimerId');
+                const savedActiveTimerStartTimestamp = localStorage.getItem('activeTimerStartTimestamp');
 
 
                 activities = savedActivities ? JSON.parse(savedActivities) : [
@@ -721,6 +780,9 @@ Almoço,60,Amarelo,Saúde e Bem-Estar</pre>
                 templates = savedTemplates ? JSON.parse(savedTemplates) : {};
                 historicalData = savedHistoricalData ? JSON.parse(savedHistoricalData) : {};
                 allQuickActivities = savedAllQuickActivities ? JSON.parse(savedAllQuickActivities) : initialPredefinedQuickActivities;
+                activeTimerId = savedActiveTimerId ? Number(savedActiveTimerId) : null;
+                activeTimerStartTimestamp = savedActiveTimerStartTimestamp ? Number(savedActiveTimerStartTimestamp) : null;
+
 
                 displayCurrentDate();
                 displayDailyTip();
@@ -729,6 +791,22 @@ Almoço,60,Amarelo,Saúde e Bem-Estar</pre>
                 renderCustomQuickAddList(); // Renders the list for management page
                 populateQuickAddDropdowns(); // Populate the dropdowns
                 render();
+
+                // Restart timer if it was active and the timestamp is available
+                if (activeTimerId && activeTimerStartTimestamp) {
+                    const activity = activities.find(act => act.id === activeTimerId);
+                    if (activity) {
+                        const elapsedSeconds = Math.floor((Date.now() - activeTimerStartTimestamp) / 1000);
+                        activity.recordedTime += elapsedSeconds;
+                        startTimer(activeTimerId, false); // Pass false to prevent showing "started" message again
+                    } else {
+                        // If activity somehow not found, clear active timer state
+                        activeTimerId = null;
+                        activeTimerStartTimestamp = null;
+                        localStorage.removeItem('activeTimerId');
+                        localStorage.removeItem('activeTimerStartTimestamp');
+                    }
+                }
             };
 
             const saveData = () => {
@@ -737,6 +815,8 @@ Almoço,60,Amarelo,Saúde e Bem-Estar</pre>
                 localStorage.setItem('productivityPlanTemplates', JSON.stringify(templates));
                 localStorage.setItem('productivityPlanHistory', JSON.stringify(historicalData));
                 localStorage.setItem('productivityAllQuickActivities', JSON.stringify(allQuickActivities));
+                localStorage.setItem('activeTimerId', activeTimerId);
+                localStorage.setItem('activeTimerStartTimestamp', activeTimerStartTimestamp);
             };
 
             const render = () => {
@@ -799,9 +879,9 @@ Almoço,60,Amarelo,Saúde e Bem-Estar</pre>
                             - ${endTime}
                         </td>
                         <td class="px-6 py-2"><input type="text" value="${activity.description}" class="w-full bg-transparent focus:bg-white p-1 rounded border-transparent focus:border-gray-300" data-field="description"></td>
-                        <td class="px-4 py-2">
+                        <td class="px-4 py-2 flex items-center gap-1"> <!-- Added flex and items-center for inline display -->
                             <input type="text" value="${minutesToHHMM(activity.duration)}" placeholder="HH:MM ou minutos" class="w-28 bg-transparent focus:bg-white p-1 rounded border-transparent focus:border-gray-300" data-field="duration-flexible">
-                            (${activity.duration} min)
+                            <span>(${activity.duration} min)</span>
                         </td>
                         <td class="px-4 py-2 font-mono ${alarmClass} ${timeExceededClass}">${formatTime(activity.recordedTime)}</td>
                         <td class="px-4 py-2"><select class="w-full bg-transparent p-1 rounded border-transparent focus:border-gray-300" data-field="productivity">${Object.entries(productivityLevels).map(([key, value]) => `<option value="${key}" ${activity.productivity === key ? 'selected' : ''}>${value}</option>`).join('')}</select></td>
@@ -1064,7 +1144,7 @@ Almoço,60,Amarelo,Saúde e Bem-Estar</pre>
             };
 
             // --- Lógica do Timer ---
-            const startTimer = (id) => {
+            const startTimer = (id, showMessageFlag = true) => {
                 if (activeTimerInterval) {
                     clearInterval(activeTimerInterval);
                     const prevActivity = activities.find(act => act.id === activeTimerId);
@@ -1073,15 +1153,19 @@ Almoço,60,Amarelo,Saúde e Bem-Estar</pre>
                     }
                 }
                 activeTimerId = id;
+                activeTimerStartTimestamp = Date.now(); // Store the start timestamp
+                
                 const activity = activities.find(act => act.id === activeTimerId);
-                if (activity) {
+                if (activity && showMessageFlag) {
                     showMessage('success', `Atividade "${activity.description}" iniciada.`);
                 }
                 
                 activeTimerInterval = setInterval(() => {
                     const currentActivity = activities.find(act => act.id === activeTimerId);
                     if (currentActivity) {
-                        currentActivity.recordedTime++;
+                        // Calculate elapsed time from the start timestamp
+                        currentActivity.recordedTime = Math.floor((Date.now() - activeTimerStartTimestamp) / 1000);
+                        
                         if (currentActivity.recordedTime >= currentActivity.duration * 60 && !currentActivity.alarmTriggered) {
                             currentActivity.alarmTriggered = true;
                             document.getElementById('alarm-message').textContent = `O tempo planejado para "${currentActivity.description}" terminou!`;
@@ -1124,6 +1208,7 @@ Almoço,60,Amarelo,Saúde e Bem-Estar</pre>
                         showMessage('warning', `Atividade "${activity.description}" pausada.`);
                     }
                     activeTimerId = null;
+                    activeTimerStartTimestamp = null; // Clear the timestamp on pause
                     saveData();
                 }
                 renderTable(); // Re-render to update active row highlight and button states
@@ -1616,6 +1701,7 @@ Almoço,60,Amarelo,Saúde e Bem-Estar</pre>
                     }] },
                     options: {
                         responsive: true,
+                        maintainAspectRatio: false, // Important for full responsiveness within parent container
                         elements: {
                             line: {
                                 borderWidth: 3
